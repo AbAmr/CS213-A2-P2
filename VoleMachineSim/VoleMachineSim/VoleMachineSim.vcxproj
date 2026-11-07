@@ -139,7 +139,17 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ExecutionError.cpp" />
+    <ClCompile Include="Instruction.cpp" />
+    <ClCompile Include="Memory.cpp" />
+    <ClCompile Include="RegisterFile.cpp" />
     <ClCompile Include="VoleMachineSim.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ExecutionError.h" />
+    <ClInclude Include="Instruction.h" />
+    <ClInclude Include="Memory.h" />
+    <ClInclude Include="RegisterFile.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
