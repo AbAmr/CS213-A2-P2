@@ -5,6 +5,7 @@
 #include "ALU.h"
 #include "ControlUnit.h"
 #include "ExecutionError.h"
+#include "ExecutionStatus.h"
 #include "RegisterFile.h"
 
 class Memory;
@@ -30,6 +31,10 @@ public:
     ExecutionStatus getStatus() const;
     ExecutionError  getError() const;
     void            dumpState();
+
+    uint8_t  getRegister(uint8_t index) { return registerFile.read(index); }
+    uint8_t  getPC() const              { return controlUnit.getPC(); }
+    uint16_t getIR() const              { return controlUnit.getIR(); }
 
     bool setProgramCounter(uint8_t address);
 
