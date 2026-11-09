@@ -9,15 +9,6 @@ class Memory;
 class RegisterFile;
 class ALU;
 
-namespace VoleError {
-    constexpr int PC_OUT_OF_RANGE     = 1;
-    constexpr int INVALID_INSTRUCTION = 2;
-    constexpr int INVALID_REGISTER    = 3;
-    constexpr int INVALID_ADDRESS     = 4;
-    constexpr int INVALID_JUMP        = 5;
-    constexpr int STEP_LIMIT          = 6;
-}
-
 class ControlUnit {
 public:
     ControlUnit();
@@ -39,4 +30,4 @@ private:
     uint8_t  pc;
     uint16_t ir;
     bool     halted;
-}; 
+};
