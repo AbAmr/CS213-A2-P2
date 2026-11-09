@@ -1,17 +1,18 @@
 #include "ExecutionError.h"
 
+#include <iostream>
 
 ExecutionError::ExecutionError()
 {
     errorMessage = "";
 }
 
-void ExecutionError::setError(string message)
+void ExecutionError::setError(std::string message)
 {
     errorMessage = message;
 }
 
-string ExecutionError::getError()
+std::string ExecutionError::getError()
 {
     return errorMessage;
 }
@@ -20,7 +21,7 @@ void ExecutionError::displayError()
 {
     if (errorMessage != "")
     {
-        cout << "Execution Error: " << errorMessage << endl;
+        std::cout << "Execution Error: " << errorMessage << std::endl;
     }
 }
 
