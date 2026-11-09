@@ -39,4 +39,4 @@ private:
     uint8_t  pc;
     uint16_t ir;
     bool     halted;
-};
+}; 
