@@ -35,7 +35,7 @@ void VoleMachine::displayStatus() {
             break;
         case ExecutionStatus::ERROR: {
             ExecutionError err = cpu.getError();
-            std::cout << "Result: ERROR " << err.getCode() << " - " << err.getMessage() << '\n';
+            std::cout << "Result: ERROR - " << err.getError() << '\n';
             break;
         }
         default:
@@ -56,7 +56,7 @@ void VoleMachine::dumpMemory(uint8_t startAddress, uint16_t count) {
     for (unsigned addr = startAddress; addr < end; ++addr) {
         if ((addr - startAddress) % 16 == 0)
             std::cout << (addr == startAddress ? "" : "\n") << DisplayOutput::toHex(addr, 2) << ":";
-        std::cout << ' ' << DisplayOutput::toHex(memory.readAddress(static_cast<uint8_t>(addr)), 2);
+        std::cout << ' ' << DisplayOutput::toHex(memory.read(static_cast<uint8_t>(addr)), 2);
     }
     std::cout << '\n';
 }
