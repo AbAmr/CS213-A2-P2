@@ -139,17 +139,28 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ALU.cpp" />
+    <ClCompile Include="Controlunit.cpp" />
+    <ClCompile Include="Cpu.cpp" />
+    <ClCompile Include="Displayoutput.cpp" />
     <ClCompile Include="ExecutionError.cpp" />
     <ClCompile Include="Instruction.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="RegisterFile.cpp" />
-    <ClCompile Include="VoleMachineSim.cpp" />
+    <ClCompile Include="VoleMachine.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ALU.h" />
+    <ClInclude Include="ControlUnit.h" />
+    <ClInclude Include="Cpu.h" />
+    <ClInclude Include="Displayoutput.h" />
     <ClInclude Include="ExecutionError.h" />
+    <ClInclude Include="ExecutionStatus.h" />
     <ClInclude Include="Instruction.h" />
     <ClInclude Include="Memory.h" />
     <ClInclude Include="RegisterFile.h" />
+    <ClInclude Include="VoleMachine.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
