@@ -1,45 +1,20 @@
-#pragma once
-
 #ifndef EXECUTIONERROR_H
 #define EXECUTIONERROR_H
 
-#include <iostream>
 #include <string>
-using namespace std;
 
 class ExecutionError
 {
 private:
-    string errorMessage;
+    std::string errorMessage;
 
 public:
-    ExecutionError()
-    {
-        errorMessage = "";
-    }
+    ExecutionError();
 
-    void setError(string message)
-    {
-        errorMessage = message;
-    }
-
-    string getError()
-    {
-        return errorMessage;
-    }
-
-    void displayError()
-    {
-        if (errorMessage != "")
-        {
-            cout << "Execution Error: " << errorMessage << endl;
-        }
-    }
-
-    void clearError()
-    {
-        errorMessage = "";
-    }
+    void setError(std::string message);
+    std::string getError();
+    void displayError();
+    void clearError();
 };
 
 #endif
