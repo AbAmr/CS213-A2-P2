@@ -8,8 +8,8 @@
 #include "RegisterFile.h"
 
 namespace {
-bool fail(ExecutionError& error, int code, const std::string& message) {
-    error.setError(code, message);
+bool fail(ExecutionError& error, const std::string& message) {
+    error.setError(message);
     return false;
 }
 }
@@ -18,22 +18,21 @@ ControlUnit::ControlUnit() : pc(0), ir(0), halted(false) {}
 
 Instruction ControlUnit::fetch(Memory& memory, ExecutionError& error) {
     if (pc == 0xFF) {
-        error.setError(VoleError::PC_OUT_OF_RANGE,
-                       "PC is 0xFF: no room for a 2-byte instruction at the end of memory");
+        error.setError("PC is 0xFF: no room for a 2-byte instruction at the end of memory");
         return Instruction(0);
     }
 
     const uint8_t address = pc;
-    const uint8_t high = memory.readAddress(address);
-    const uint8_t low  = memory.readAddress(static_cast<uint8_t>(address + 1));
+    const uint8_t high = memory.read(address);
+    const uint8_t low  = memory.read(static_cast<uint8_t>(address + 1));
 
     ir = static_cast<uint16_t>((high << 8) | low);
     pc = static_cast<uint8_t>(pc + 2);
 
     Instruction instruction(ir);
-    if (!instruction.decode() || !instruction.isValid()) {
-        error.setError(VoleError::INVALID_INSTRUCTION,
-                       "Invalid instruction 0x" + DisplayOutput::toHex(ir, 4) +
+    const uint8_t opcode = instruction.getOpcode();
+    if (opcode < 0x1 || opcode > 0xC) {
+        error.setError("Invalid instruction 0x" + DisplayOutput::toHex(ir, 4) +
                        " at address 0x" + DisplayOutput::toHex(address, 2));
     }
     return instruction;
@@ -43,62 +42,64 @@ bool ControlUnit::execute(Instruction instruction, RegisterFile& regFile, ALU& a
                           Memory& memory, ExecutionError& error) {
     const uint8_t opcode = instruction.getOpcode();
     const uint8_t r  = instruction.getR();
-    const uint8_t s  = instruction.getS();
-    const uint8_t t  = instruction.getT();
-    const uint8_t y  = instruction.getY();
-    const uint8_t xy = static_cast<uint8_t>((instruction.getX() << 4) | y);
+    const uint8_t s  = instruction.getX();
+    const uint8_t t  = instruction.getY();
+    const uint8_t xy = instruction.getAddress();
 
     if (!regFile.isValidRegister(r) || !regFile.isValidRegister(s) || !regFile.isValidRegister(t))
-        return fail(error, VoleError::INVALID_REGISTER,
-                    "Instruction 0x" + DisplayOutput::toHex(ir, 4) + " uses a register that does not exist");
+        return fail(error, "Instruction 0x" + DisplayOutput::toHex(ir, 4) + " uses a register that does not exist");
 
     switch (opcode) {
     case 0x1:
         if (!memory.isValidAddress(xy))
-            return fail(error, VoleError::INVALID_ADDRESS, "LOAD from invalid address 0x" + DisplayOutput::toHex(xy, 2));
-        regFile.writeRegister(r, memory.readAddress(xy));
+            return fail(error, "LOAD from invalid address 0x" + DisplayOutput::toHex(xy, 2));
+        regFile.write(r, memory.read(xy));
         break;
 
     case 0x2:
-        regFile.writeRegister(r, xy);
+        regFile.write(r, xy);
         break;
 
     case 0x3:
-        if (!memory.writeAddress(xy, regFile.readRegister(r)))
-            return fail(error, VoleError::INVALID_ADDRESS, "STORE to invalid address 0x" + DisplayOutput::toHex(xy, 2));
+        if (!memory.write(xy, regFile.read(r)))
+            return fail(error, "STORE to invalid address 0x" + DisplayOutput::toHex(xy, 2));
+        if (xy == 0x00) {
+            DisplayOutput::showByte(regFile.read(r));
+            DisplayOutput::showCharacter(regFile.read(r));
+        }
         break;
 
     case 0x4:
-        regFile.writeRegister(t, regFile.readRegister(s));
+        regFile.write(t, regFile.read(s));
         break;
 
     case 0x5:
-        regFile.writeRegister(r, alu.addTwosComplement(regFile.readRegister(s), regFile.readRegister(t)));
+        regFile.write(r, alu.addTwoComplement(regFile.read(s), regFile.read(t)));
         break;
 
     case 0x6:
-        regFile.writeRegister(r, alu.addFloatingPoint(regFile.readRegister(s), regFile.readRegister(t)));
+        regFile.write(r, alu.floatToDecimal(alu.addFloatingPoint(regFile.read(s), regFile.read(t))));
         break;
 
     case 0x7:
-        regFile.writeRegister(r, alu.bitwiseOr(regFile.readRegister(s), regFile.readRegister(t)));
+        regFile.write(r, alu.bitwiseOr(regFile.read(s), regFile.read(t)));
         break;
 
     case 0x8:
-        regFile.writeRegister(r, alu.bitwiseAnd(regFile.readRegister(s), regFile.readRegister(t)));
+        regFile.write(r, alu.bitwiseAnd(regFile.read(s), regFile.read(t)));
         break;
 
     case 0x9:
-        regFile.writeRegister(r, alu.bitwiseXor(regFile.readRegister(s), regFile.readRegister(t)));
+        regFile.write(r, alu.bitwiseXor(regFile.read(s), regFile.read(t)));
         break;
 
     case 0xA:
-        regFile.writeRegister(r, alu.rotateRight(regFile.readRegister(r), y));
+        regFile.write(r, alu.rotateRight(regFile.read(r), t));
         break;
 
     case 0xB:
-        if (regFile.readRegister(r) == regFile.readRegister(0) && !setPCAddress(xy))
-            return fail(error, VoleError::INVALID_JUMP, "JUMP to invalid address 0x" + DisplayOutput::toHex(xy, 2));
+        if (regFile.read(r) == regFile.read(0) && !setPCAddress(xy))
+            return fail(error, "JUMP to invalid address 0x" + DisplayOutput::toHex(xy, 2));
         break;
 
     case 0xC:
@@ -106,8 +107,7 @@ bool ControlUnit::execute(Instruction instruction, RegisterFile& regFile, ALU& a
         break;
 
     default:
-        return fail(error, VoleError::INVALID_INSTRUCTION,
-                    "Unknown opcode " + DisplayOutput::toHex(opcode, 1));
+        return fail(error, "Unknown opcode " + DisplayOutput::toHex(opcode, 1));
     }
     return true;
 }
