@@ -1,14 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include "Memory.h"
-#include "RegisterFile.h"
-
-enum class ExecutionStatus {
-    CONTINUE,
-    HALTED,
-    ERROR
-};
 
 class Instruction {
 private:
